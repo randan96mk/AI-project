@@ -164,7 +164,8 @@
 </header>
 
 <nav class="tabs">
-  <button data-tab="overview" class="active">🗺 Overview</button>
+  <button data-tab="simple" class="active">🙂 Explain It Simply</button>
+  <button data-tab="overview">🗺 Overview</button>
   <button data-tab="rag">📚 RAG Pipeline</button>
   <button data-tab="agent">🤖 Agent (ReAct)</button>
   <button data-tab="mcp">🔌 MCP Server</button>
@@ -174,8 +175,168 @@
 
 <div class="wrap">
 
+<!-- SIMPLE / NON-CODER EXPLAINER -->
+<section id="simple" class="active">
+  <h2>Explain It Simply 🙂</h2>
+  <div class="subtitle">No coding knowledge needed. Here's what's actually happening, in plain English, with everyday analogies.</div>
+
+  <div class="card" style="margin-bottom:30px; border-color:var(--accent);">
+    <h3 style="font-size:16px;">The Big Picture</h3>
+    <p style="font-size:13.5px; line-height:1.8;">
+      This project builds a <strong style="color:var(--text);">smart assistant</strong> that can answer questions, do math,
+      manage files, and search through your documents — and it does all of this
+      <strong style="color:var(--text);">on your own computer</strong>, without sending anything to the internet or needing
+      a paid subscription. There are three "departments" working together: <strong style="color:var(--accent);">the Agent</strong>
+      (the brain that decides what to do), <strong style="color:var(--accent2);">RAG</strong> (the library it can search for facts),
+      and the <strong style="color:var(--accent4);">MCP Server</strong> (a reception desk that lets other programs use the
+      same tools over a network).
+    </p>
+  </div>
+
+  <!-- RAG in plain English -->
+  <h3 style="font-size:16px; color:var(--accent2); margin-bottom:4px;">📚 1. RAG — Building the Library</h3>
+  <p style="font-size:13px; color:var(--muted); margin-bottom:18px;">
+    Imagine a stack of notes you want your assistant to instantly search through.
+  </p>
+  <div class="steps">
+    <div class="step">
+      <div class="dot">1</div>
+      <div class="step-head"><span class="t">Gather the notes</span><span class="chev">▸</span></div>
+      <div class="step-body"><div class="step-body-inner">
+        <p>The system looks in a folder and picks up every note file it finds. Right now there are two: one about trading strategies, one about workplace automation.</p>
+      </div></div>
+    </div>
+    <div class="step">
+      <div class="dot">2</div>
+      <div class="step-head"><span class="t">Cut the notes into small index cards</span><span class="chev">▸</span></div>
+      <div class="step-body"><div class="step-body-inner">
+        <p>A long document is hard to search effectively, so each file is sliced into bite-sized chunks (roughly a short paragraph each), with a little overlap between chunks so no sentence gets awkwardly cut in half and loses its meaning.</p>
+      </div></div>
+    </div>
+    <div class="step">
+      <div class="dot">3</div>
+      <div class="step-head"><span class="t">Translate each chunk into "meaning numbers"</span><span class="chev">▸</span></div>
+      <div class="step-body"><div class="step-body-inner">
+        <p>A small AI model (running locally, no internet needed) reads each chunk and converts its <em>meaning</em> into a list of numbers. Chunks about similar topics end up with similar numbers — even if they use completely different words. This is what lets you search by meaning instead of just exact keyword matching.</p>
+      </div></div>
+    </div>
+    <div class="step">
+      <div class="dot">4</div>
+      <div class="step-head"><span class="t">File everything away</span><span class="chev">▸</span></div>
+      <div class="step-body"><div class="step-body-inner">
+        <p>All those number-translations get saved into a small local database (Chroma), stored on disk. Think of it as a card catalog organized by meaning instead of alphabetically.</p>
+      </div></div>
+    </div>
+    <div class="step">
+      <div class="dot">5</div>
+      <div class="step-head"><span class="t">Search</span><span class="chev">▸</span></div>
+      <div class="step-body"><div class="step-body-inner">
+        <p>When someone later asks "what's my straddle strategy?", that question is also translated into numbers, and the system finds the 3 chunks whose numbers are "closest" in meaning — even if exact words don't match. It returns those chunks plus a confidence score and which file they came from.</p>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- Agent in plain English -->
+  <h3 style="font-size:16px; color:var(--accent4); margin:36px 0 4px;">🤖 2. The Agent — The Decision-Maker</h3>
+  <p style="font-size:13px; color:var(--muted); margin-bottom:18px;">
+    This is the part you actually talk to. It uses "Reason + Act" — think of someone thinking out loud before doing each step.
+  </p>
+  <div class="steps">
+    <div class="step">
+      <div class="dot">1</div>
+      <div class="step-head"><span class="t">You ask a question</span><span class="chev">▸</span></div>
+      <div class="step-body"><div class="step-body-inner">
+        <p>E.g. "What is 15% of 2500?"</p>
+      </div></div>
+    </div>
+    <div class="step">
+      <div class="dot">2</div>
+      <div class="step-head"><span class="t">It thinks</span><span class="chev">▸</span></div>
+      <div class="step-body"><div class="step-body-inner">
+        <p>The local AI model reads your question and reasons: "I need to do a calculation here."</p>
+      </div></div>
+    </div>
+    <div class="step">
+      <div class="dot">3</div>
+      <div class="step-head"><span class="t">It picks a tool</span><span class="chev">▸</span></div>
+      <div class="step-body"><div class="step-body-inner">
+        <p>Rather than trying to do math "in its head" (AI models are often bad at that), it decides to use a calculator tool, and writes down exactly what to calculate: 2500 × 0.15.</p>
+      </div></div>
+    </div>
+    <div class="step">
+      <div class="dot">4</div>
+      <div class="step-head"><span class="t">The tool actually runs</span><span class="chev">▸</span></div>
+      <div class="step-body"><div class="step-body-inner">
+        <p>A real, reliable piece of code (not the AI) performs the calculation and gets the exact answer: 375.0. This is called an "Observation" — what actually happened.</p>
+      </div></div>
+    </div>
+    <div class="step">
+      <div class="dot">5</div>
+      <div class="step-head"><span class="t">It checks itself and answers</span><span class="chev">▸</span></div>
+      <div class="step-body"><div class="step-body-inner">
+        <p>The AI looks at the observation, decides it has enough information, and gives you the final answer: "15% of 2500 is 375." If the task needs more than one step, it repeats this loop (up to 5 times), building on each previous result — like a person crossing off items on a checklist.</p>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="tools-grid" style="margin-top:18px;">
+    <div class="tool-card"><div class="icon">🧮</div><h4>Calculator</h4><p>Does math reliably, instead of letting the AI guess.</p></div>
+    <div class="tool-card"><div class="icon">📄</div><h4>Read File</h4><p>Opens and reads a file's contents.</p></div>
+    <div class="tool-card"><div class="icon">✍️</div><h4>Write File</h4><p>Saves text to a file.</p></div>
+    <div class="tool-card"><div class="icon">🕐</div><h4>Get Time</h4><p>Tells you the current date/time.</p></div>
+    <div class="tool-card"><div class="icon">🔍</div><h4>Search Knowledge Base</h4><p>Searches the "library" built by RAG.</p></div>
+  </div>
+
+  <!-- MCP in plain English -->
+  <h3 style="font-size:16px; color:var(--accent3); margin:36px 0 4px;">🔌 3. MCP Server — The Reception Desk</h3>
+  <p style="font-size:13.5px; line-height:1.8; margin-bottom:14px;">
+    This part lets the <em>same</em> 5 tools be used by other programs — not just by talking to the AI assistant.
+    It's like opening a phone line so anyone (another app, a script, a website) can call up and say
+    "please run the calculator tool with these numbers" and get an answer back, without needing to involve the AI at all.
+    It runs as a small web service on your computer with four "phone extensions":
+  </p>
+  <div class="tools-grid">
+    <div class="tool-card"><div class="icon">❤️</div><h4>"Are you alive?"</h4><p>Quick check to confirm the server is running.</p></div>
+    <div class="tool-card"><div class="icon">📋</div><h4>"What can you do?"</h4><p>Lists all 5 available tools and what input each needs.</p></div>
+    <div class="tool-card"><div class="icon">☎️</div><h4>"Please do this one thing"</h4><p>Send a tool name + details, get the result back.</p></div>
+    <div class="tool-card"><div class="icon">📑</div><h4>"Please do this whole list"</h4><p>Same as above, but for several tasks in one request.</p></div>
+  </div>
+  <p style="font-size:13px; color:var(--muted); margin-top:14px;">If you ask for a tool that doesn't exist, or something goes wrong, it doesn't crash — it just politely reports back that something failed, with an explanation.</p>
+
+  <!-- Test client in plain English -->
+  <h3 style="font-size:16px; color:var(--green); margin:36px 0 4px;">🧪 4. Test Client — The Quality Inspector</h3>
+  <p style="font-size:13.5px; line-height:1.8; margin-bottom:14px;">
+    This is a script whose only job is to double-check that the reception desk (MCP server) is actually working
+    correctly. It runs 7 automatic checks: is the server alive, does it list all 5 tools correctly, does the
+    calculator give the right answer, does "get the time" return something sensible, can it write a file and read
+    it back correctly, does searching the knowledge base return real results, and can it handle a batch of multiple
+    requests at once. If all 7 pass, you see <code>✓ All tests passed</code> — confirmation everything is wired
+    together correctly before you trust it with real use.
+  </p>
+
+  <!-- Final flow -->
+  <div class="card" style="margin-top:30px; border-color:var(--accent2);">
+    <h3 style="font-size:15px;">How It All Fits Together</h3>
+    <pre style="margin-top:12px;">You type a question
+        ↓
+   The Agent thinks about it
+        ↓
+   It picks the right tool (calculator, file, time, or search)
+        ↓
+   The tool runs and gets a real result
+        ↓
+   The Agent reads that result and gives you a final answer</pre>
+    <p style="margin-top:14px; font-size:13px; color:var(--muted);">
+      Meanwhile, the MCP Server offers a side door so other software can use those same 5 tools directly over
+      the network, and the Test Client is the safety check that makes sure that side door works properly.
+      Everything — the AI model, the document search, the tool execution — runs <strong style="color:var(--text);">locally
+      on your machine</strong>. Nothing is sent to a cloud service, and no API key or subscription is required.
+    </p>
+  </div>
+</section>
+
 <!-- OVERVIEW -->
-<section id="overview" class="active">
+<section id="overview">
   <h2>System Overview</h2>
   <div class="subtitle">Three components, one local stack. Click any box to jump to its detail tab.</div>
 
