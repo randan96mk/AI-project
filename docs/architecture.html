@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent + RAG + MCP — System Design</title>
+<style>
+  :root{
+    --bg:#0a0e14; --bg2:#0f1420; --panel:#121826; --border:#1f2a3d;
+    --accent:#5eead4; --accent2:#a78bfa; --accent3:#fb923c; --accent4:#60a5fa;
+    --text:#e2e8f0; --muted:#7d8aa3; --green:#4ade80; --red:#f87171; --yellow:#fbbf24;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:radial-gradient(circle at 20% 0%, #0e1626 0%, var(--bg) 45%);
+    color:var(--text); font-family:'SF Mono','Fira Code',Consolas,monospace;
+    line-height:1.6; padding-bottom:80px;
+  }
+  code,.mono{font-family:'SF Mono','Fira Code',Consolas,monospace;}
+  a{color:var(--accent);}
+  .wrap{max-width:1100px; margin:0 auto; padding:0 24px;}
+
+  /* HERO */
+  header.hero{
+    padding:70px 24px 50px; text-align:center; border-bottom:1px solid var(--border);
+    background:linear-gradient(180deg, rgba(94,234,212,0.06), transparent);
+  }
+  header.hero .tag{
+    display:inline-block; font-size:12px; letter-spacing:2px; color:var(--accent);
+    border:1px solid var(--accent); padding:4px 12px; border-radius:20px; margin-bottom:18px;
+    text-transform:uppercase;
+  }
+  header.hero h1{
+    font-size:42px; font-weight:700; letter-spacing:-1px;
+    background:linear-gradient(90deg,var(--accent),var(--accent4),var(--accent2));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  header.hero p{color:var(--muted); margin-top:14px; font-size:15px; max-width:640px; margin-left:auto; margin-right:auto;}
+
+  /* NAV TABS */
+  nav.tabs{
+    position:sticky; top:0; z-index:50; background:rgba(10,14,20,0.92); backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--border); display:flex; justify-content:center; gap:6px;
+    padding:14px 12px; flex-wrap:wrap;
+  }
+  nav.tabs button{
+    background:transparent; color:var(--muted); border:1px solid var(--border);
+    padding:8px 16px; border-radius:8px; font-family:inherit; font-size:13px; cursor:pointer;
+    transition:.15s;
+  }
+  nav.tabs button:hover{color:var(--text); border-color:var(--accent4);}
+  nav.tabs button.active{background:var(--accent); color:#06241f; border-color:var(--accent); font-weight:600;}
+
+  section{padding:60px 0; border-bottom:1px solid var(--border); display:none;}
+  section.active{display:block;}
+  section h2{font-size:26px; margin-bottom:6px;}
+  section .subtitle{color:var(--muted); margin-bottom:34px; font-size:14px;}
+  .badge{display:inline-block; font-size:11px; padding:2px 9px; border-radius:12px; margin-left:8px; vertical-align:middle;}
+  .badge.green{background:rgba(74,222,128,.15); color:var(--green); border:1px solid rgba(74,222,128,.4);}
+  .badge.blue{background:rgba(96,165,250,.15); color:var(--accent4); border:1px solid rgba(96,165,250,.4);}
+  .badge.purple{background:rgba(167,139,250,.15); color:var(--accent2); border:1px solid rgba(167,139,250,.4);}
+
+  /* OVERVIEW DIAGRAM */
+  .flow-row{display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap; margin:30px 0;}
+  .flow-box{
+    background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:16px 20px;
+    min-width:140px; text-align:center; cursor:pointer; transition:.18s;
+  }
+  .flow-box:hover{border-color:var(--accent); transform:translateY(-3px); box-shadow:0 8px 24px rgba(94,234,212,.12);}
+  .flow-box .ico{font-size:24px;}
+  .flow-box .name{font-weight:700; margin-top:6px; font-size:14px;}
+  .flow-box .desc{font-size:11px; color:var(--muted); margin-top:4px;}
+  .arrow{color:var(--accent); font-size:22px;}
+
+  .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:30px;}
+  @media(max-width:800px){.grid3{grid-template-columns:1fr;}}
+  .card{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:20px;}
+  .card h3{font-size:15px; color:var(--accent); margin-bottom:8px;}
+  .card p{font-size:13px; color:var(--muted);}
+
+  /* STEP TIMELINE */
+  .steps{position:relative; margin-top:30px; padding-left:36px;}
+  .steps::before{content:''; position:absolute; left:14px; top:6px; bottom:6px; width:2px; background:linear-gradient(var(--border),var(--accent),var(--border));}
+  .step{position:relative; margin-bottom:18px; cursor:pointer;}
+  .step .dot{
+    position:absolute; left:-36px; top:2px; width:30px; height:30px; border-radius:50%;
+    background:var(--panel); border:2px solid var(--border); display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:700; color:var(--muted); transition:.18s;
+  }
+  .step.open .dot{border-color:var(--accent); color:var(--accent); background:rgba(94,234,212,.08);}
+  .step-head{
+    background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:14px 18px;
+    display:flex; justify-content:space-between; align-items:center; transition:.15s;
+  }
+  .step.open .step-head{border-color:var(--accent); background:#10182a;}
+  .step-head:hover{border-color:var(--accent4);}
+  .step-head .t{font-weight:600; font-size:14.5px;}
+  .step-head .chev{color:var(--muted); transition:.2s;}
+  .step.open .chev{transform:rotate(90deg); color:var(--accent);}
+  .step-body{
+    max-height:0; overflow:hidden; transition:max-height .25s ease;
+    background:#0c1220; border:1px solid var(--border); border-top:none; border-radius:0 0 10px 10px;
+  }
+  .step.open .step-body{max-height:600px;}
+  .step-body-inner{padding:16px 18px; font-size:13px; color:var(--text);}
+  .step-body-inner p{margin-bottom:8px; color:#c4cedd;}
+  pre{
+    background:#070b12; border:1px solid var(--border); border-radius:8px; padding:12px 14px;
+    overflow-x:auto; font-size:12.5px; color:var(--accent); margin-top:8px;
+  }
+  .kv{display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;}
+  .kv span{background:#0c1626; border:1px solid var(--border); padding:3px 9px; border-radius:6px; font-size:11px; color:var(--accent4);}
+
+  /* ENDPOINT TABLE */
+  table{width:100%; border-collapse:collapse; margin-top:20px; font-size:13px;}
+  th,td{padding:10px 14px; border-bottom:1px solid var(--border); text-align:left;}
+  th{color:var(--accent); font-size:12px; text-transform:uppercase; letter-spacing:1px;}
+  tr:hover td{background:#0e1524;}
+  .method{font-weight:700; padding:2px 8px; border-radius:5px; font-size:11px;}
+  .method.get{background:rgba(96,165,250,.15); color:var(--accent4);}
+  .method.post{background:rgba(74,222,128,.15); color:var(--green);}
+
+  /* TOOL CARDS */
+  .tools-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; margin-top:24px;}
+  .tool-card{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:16px;}
+  .tool-card .icon{font-size:22px;}
+  .tool-card h4{margin:8px 0 4px; font-size:14px; color:var(--accent3);}
+  .tool-card p{font-size:12px; color:var(--muted); margin-bottom:6px;}
+  .tool-card code{font-size:11px; color:var(--accent4); background:#0c1626; padding:2px 6px; border-radius:4px;}
+
+  /* INTERACTIVE DEMO PANEL */
+  .demo{background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:22px; margin-top:26px;}
+  .demo-controls{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;}
+  .demo-controls button{
+    background:#0c1626; border:1px solid var(--border); color:var(--text); padding:8px 14px;
+    border-radius:8px; cursor:pointer; font-family:inherit; font-size:12.5px; transition:.15s;
+  }
+  .demo-controls button:hover{border-color:var(--accent);}
+  .demo-controls button.playing{background:var(--accent); color:#06241f; border-color:var(--accent);}
+  .console{
+    background:#070b12; border:1px solid var(--border); border-radius:8px; padding:16px;
+    min-height:220px; font-size:12.5px; white-space:pre-wrap;
+  }
+  .console .line{margin-bottom:6px; opacity:0; animation:fadeIn .35s forwards;}
+  @keyframes fadeIn{to{opacity:1;}}
+  .console .thought{color:var(--accent2);}
+  .console .action{color:var(--accent4);}
+  .console .obs{color:var(--green);}
+  .console .final{color:var(--accent3); font-weight:700;}
+  .console .q{color:var(--text); font-weight:700;}
+
+  footer{text-align:center; padding:50px 24px 20px; color:var(--muted); font-size:12px;}
+
+  .pill-row{display:flex; gap:8px; flex-wrap:wrap; margin-top:14px;}
+  .pill{background:#0c1626; border:1px solid var(--border); color:var(--accent4); padding:5px 11px; border-radius:16px; font-size:11.5px;}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="tag">Local-first &middot; No API keys &middot; ~1000 LOC</div>
+  <h1>Agent + RAG + MCP</h1>
+  <p>An interactive walkthrough of how an autonomous ReAct agent, a Chroma-backed retrieval system, and a FastAPI tool server work together — built on Ollama (gemma4:e4b), entirely on your machine.</p>
+</header>
+
+<nav class="tabs">
+  <button data-tab="overview" class="active">🗺 Overview</button>
+  <button data-tab="rag">📚 RAG Pipeline</button>
+  <button data-tab="agent">🤖 Agent (ReAct)</button>
+  <button data-tab="mcp">🔌 MCP Server</button>
+  <button data-tab="client">🧪 Test Client</button>
+  <button data-tab="demo">▶ Live Trace Demo</button>
+</nav>
+
+<div class="wrap">
+
+<!-- OVERVIEW -->
+<section id="overview" class="active">
+  <h2>System Overview</h2>
+  <div class="subtitle">Three components, one local stack. Click any box to jump to its detail tab.</div>
+
+  <div class="flow-row">
+    <div class="flow-box" onclick="goTab('agent')"><div class="ico">🧑</div><div class="name">User</div><div class="desc">CLI input</div></div>
+    <div class="arrow">→</div>
+    <div class="flow-box" onclick="goTab('agent')"><div class="ico">🤖</div><div class="name">Agent</div><div class="desc">agent.py · ReAct loop</div></div>
+    <div class="arrow">→</div>
+    <div class="flow-box" onclick="goTab('agent')"><div class="ico">🛠</div><div class="name">5 Tools</div><div class="desc">calc / file / time / RAG</div></div>
+    <div class="arrow">→</div>
+    <div class="flow-box" onclick="goTab('rag')"><div class="ico">📚</div><div class="name">Chroma DB</div><div class="desc">rag.py · vector search</div></div>
+  </div>
+
+  <div class="grid3">
+    <div class="card">
+      <h3>① agent.py</h3>
+      <p>Builds a LangChain <code>AgentExecutor</code> around Ollama's <code>gemma4:e4b</code>. Implements the ReAct prompting pattern: Thought → Action → Observation, looped up to 5 times, with 5 callable tools.</p>
+    </div>
+    <div class="card">
+      <h3>② rag.py</h3>
+      <p>Loads <code>data/docs/*.md</code>, splits into 500-char chunks (50 overlap), embeds locally with <code>all-MiniLM-L6-v2</code>, and persists vectors to a local Chroma DB at <code>data/chroma_db/</code>.</p>
+    </div>
+    <div class="card">
+      <h3>③ mcp_server.py</h3>
+      <p>A FastAPI app that exposes the same 5 tools as a REST API on port 8000 — <code>/health</code>, <code>/tools</code>, <code>/call</code>, <code>/batch</code> — so any external system can invoke them over HTTP.</p>
+    </div>
+  </div>
+
+  <div class="pill-row">
+    <span class="pill">LLM: Ollama gemma4:e4b</span>
+    <span class="pill">Framework: LangChain</span>
+    <span class="pill">Vector DB: Chroma</span>
+    <span class="pill">Embeddings: HuggingFace MiniLM-L6-v2</span>
+    <span class="pill">API: FastAPI + Uvicorn :8000</span>
+  </div>
+</section>
+
+<!-- RAG -->
+<section id="rag">
+  <h2>RAG Pipeline <span class="badge green">rag.py</span></h2>
+  <div class="subtitle">How raw markdown becomes searchable knowledge. Click each step to expand.</div>
+
+  <div class="steps" id="rag-steps">
+    <div class="step">
+      <div class="dot">1</div>
+      <div class="step-head"><span class="t">Load markdown files from data/docs/</span><span class="chev">▸</span></div>
+      <div class="step-body"><div class="step-body-inner">
+        <p><code>DirectoryLoader</code> scans <code>data/docs/*.md</code> (currently <code>trading.md</code> and <code>workfront.md</code>) and reads each file as a <code>TextLoader</code> document with UTF-8 encoding.</p>
+        <pre>loader = DirectoryLoader(docs_path, glob="*.md", loader_cls=TextLoader)
+docs = loader.load()</pre>
+        <div class="kv"><span>Input: .md files</span><span>Output: LangChain Document objects</span></div>
+      </div></div>
+    </div>
+
+    <div class="step">
+      <div class="dot">2</div>
+      <div class="step-head"><span class="t">Chunk text into overlapping windows</span><span class="chev">▸</span></div>
+      <div class="step-body"><div class="step-body-inner">
+        <p><code>RecursiveCharacterTextSplitter</code> breaks each document into 500-character chunks with 50-character overlap, so context isn't lost at chunk boundaries.</p>
+        <pre>splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+chunks = splitter.split_documents(docs)</pre>
+        <div class="kv"><span>CHUNK_SIZE = 500</span><span>CHUNK_OVERLAP = 50</span></div>
+      </div></div>
+    </div>
+
+    <div class="step">
+      <div class="dot">3</div>
+      <div class="step-head"><span class="t">Embed each chunk locally</span><span class="chev">▸</span></div>
+      <div class="step-body"><div class="step-body-inner">
+        <p>Each text chunk is converted into a vector using <code>HuggingFaceEmbeddings</code> with the <code>all-MiniLM-L6-v2</code> model — runs fully offline, no API calls or keys required.</p>
+        <div class="kv"><span>Model: all-MiniLM-L6-v2</span><span>384-dim vectors</span></div>
+      </div></div>
+    </div>
+
+    <div class="step">
+      <div class="dot">4</div>
+      <div class="step-head"><span class="t">Persist vectors to Chroma DB</span><span class="chev">▸</span></div>
+      <div class="step-body"><div class="step-body-inner">
+        <p>Vectors + chunk text + source metadata are stored in a local Chroma collection, written to disk at <code>data/chroma_db/</code> so the index survives restarts.</p>
+        <pre>self.vectorstore = Chroma.from_documents(
+    documents=chunks, embedding=self.embeddings,
+    persist_directory=self.persist_dir)
+self.vectorstore.persist()</pre>
+      </div></div>
+    </div>
+
+    <div class="step">
+      <div class="dot">5</div>
+      <div class="step-head"><span class="t">Similarity search at query time</span><span class="chev">▸</span></div>
+      <div class="step-body"><div class="step-body-inner">
+        <p>When a query comes in (from the agent's <code>search_rag</code> tool or directly), <code>similarity_search_with_score</code> returns the top-<code>k</code> (default 3) closest chunks by vector distance, each with content, source file, and similarity score.</p>
+        <pre>rag.search("long straddle strategy", k=3)
+# → [{content, source, score}, ...]</pre>
+      </div></div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:36px; font-size:15px; color:var(--accent4);">Sample Knowledge Base</h3>
+  <div class="tools-grid" style="margin-top:14px;">
+    <div class="tool-card"><div class="icon">📈</div><h4>trading.md</h4><p>NIFTY options strategies, Bitcoin straddle setup, risk management, entry/exit timing, Greeks.</p></div>
+    <div class="tool-card"><div class="icon">⚙️</div><h4>workfront.md</h4><p>Workfront Fusion automation basics, Marketo integration patterns, campaign setup, troubleshooting.</p></div>
+  </div>
+</section>
+
+<!-- AGENT -->
+<section id="agent">
+  <h2>Agent — ReAct Loop <span class="badge purple">agent.py</span></h2>
+  <div class="subtitle">Thought → Action → Observation, repeated until the agent has a final answer (max 5 iterations).</div>
+
+  <div class="steps" id="agent-steps">
+    <div class="step">
+      <div class="dot">1</div>
+      <div class="step-head"><span class="t">User submits a question</span><span class="chev">▸</span></div>
+      <div class="step-body"><div class="step-body-inner">
+        <p>Either typed at the interactive <code>You:</code> prompt, or one of 3 built-in example tasks run automatically on startup.</p>
+        <div class="kv"><span>e.g. "What is 15% of 2500?"</span></div>
+      </div></div>
+    </div>
+    <div class="step">
+      <div class="dot">2</div>
+      <div class="step-head"><span class="t">LLM reasons: Thought</span><span class="chev">▸</span></div>
+      <div class="step-body"><div class="step-body-inner">
+        <p>The ReAct prompt template feeds the question plus tool descriptions to <code>gemma4:e4b</code> via Ollama (temperature 0.1). The model emits a <code>Thought:</code> explaining what to do next.</p>
+      </div></div>
+    </div>
+    <div class="step">
+      <div class="dot">3</div>
+      <div class="step-head"><span class="t">LLM picks a tool: Action / Action Input</span><span class="chev">▸</span></div>
+      <div class="step-body"><div class="step-body-inner">
+        <p>Model outputs <code>Action: &lt;tool_name&gt;</code> and <code>Action Input: &lt;args&gt;</code>, selecting from the 5 registered tools.</p>
+      </div></div>
+    </div>
+    <div class="step">
+      <div class="dot">4</div>
+      <div class="step-head"><span class="t">Tool executes → Observation</span><span class="chev">▸</span></div>
+      <div class="step-body"><div class="step-body-inner">
+        <p>LangChain's <code>AgentExecutor</code> calls the matching Python function, captures its return value as the <code>Observation</code>, and feeds it back into the prompt for the next reasoning step.</p>
+      </div></div>
+    </div>
+    <div class="step">
+      <div class="dot">5</div>
+      <div class="step-head"><span class="t">Loop or finish: Final Answer</span><span class="chev">▸</span></div>
+      <div class="step-body"><div class="step-body-inner">
+        <p>Steps 2–4 repeat (up to <code>max_iterations=5</code>) until the model is confident enough to emit <code>Final Answer:</code>, which is returned to the user. Parsing errors are caught via <code>handle_parsing_errors=True</code>.</p>
+      </div></div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:36px; font-size:15px; color:var(--accent4);">The 5 Tools</h3>
+  <div class="tools-grid">
+    <div class="tool-card"><div class="icon">🧮</div><h4>calculator</h4><p>Evaluates safe arithmetic expressions (digits + operators only, no builtins).</p><code>"100 * 0.02" → "2.0"</code></div>
+    <div class="tool-card"><div class="icon">📄</div><h4>read_file</h4><p>Reads first 1000 chars of a file at a given path.</p><code>read_file("data.json")</code></div>
+    <div class="tool-card"><div class="icon">✍️</div><h4>write_file</h4><p>Writes content to a file. Input format: <code>path|||content</code>.</p><code>"out.txt|||hello"</code></div>
+    <div class="tool-card"><div class="icon">🕐</div><h4>get_time</h4><p>Returns current date/time, no arguments needed.</p><code>"2026-06-30 14:30:45"</code></div>
+    <div class="tool-card"><div class="icon">🔍</div><h4>search_rag</h4><p>Queries the Chroma vector DB via <code>RAGSystem.search()</code>, returns top-3 chunks.</p><code>search_rag("straddle")</code></div>
+  </div>
+</section>
+
+<!-- MCP -->
+<section id="mcp">
+  <h2>MCP Server — HTTP API <span class="badge blue">mcp_server.py</span></h2>
+  <div class="subtitle">Same 5 tools, exposed over REST via FastAPI on <code>:8000</code>, so external systems can call them without going through the LLM.</div>
+
+  <table>
+    <tr><th>Method</th><th>Path</th><th>What it does</th></tr>
+    <tr><td><span class="method get">GET</span></td><td>/health</td><td>Liveness check → <code>{"status":"ok","service":"MCP Server"}</code></td></tr>
+    <tr><td><span class="method get">GET</span></td><td>/tools</td><td>Lists all registered tools with descriptions + parameter schemas</td></tr>
+    <tr><td><span class="method post">POST</span></td><td>/call</td><td>Executes one tool: <code>{tool_name, arguments}</code> → <code>{tool_name, result, success}</code></td></tr>
+    <tr><td><span class="method post">POST</span></td><td>/batch</td><td>Executes a list of tool calls sequentially, returns all results + count</td></tr>
+  </table>
+
+  <div class="steps" style="margin-top:34px;" id="mcp-steps">
+    <div class="step">
+      <div class="dot">1</div>
+      <div class="step-head"><span class="t">Request hits FastAPI route</span><span class="chev">▸</span></div>
+      <div class="step-body"><div class="step-body-inner">
+        <p>Pydantic models (<code>ToolCall</code>, <code>ToolResult</code>, <code>BatchResult</code>) validate the incoming JSON body automatically.</p>
+      </div></div>
+    </div>
+    <div class="step">
+      <div class="dot">2</div>
+      <div class="step-head"><span class="t">Lookup in TOOL_REGISTRY</span><span class="chev">▸</span></div>
+      <div class="step-body"><div class="step-body-inner">
+        <p>A dict maps each <code>tool_name</code> to a lambda that unpacks <code>arguments</code> and calls the matching function imported from <code>agent.py</code> (calculator, read_file, write_file, get_time, search_rag).</p>
+      </div></div>
+    </div>
+    <div class="step">
+      <div class="dot">3</div>
+      <div class="step-head"><span class="t">execute_tool() runs it safely</span><span class="chev">▸</span></div>
+      <div class="step-body"><div class="step-body-inner">
+        <p>Wrapped in try/except — unknown tool names return <code>success:false</code> and a 404 on <code>/call</code>; runtime errors are caught and returned as a failed <code>ToolResult</code> instead of crashing the server.</p>
+      </div></div>
+    </div>
+    <div class="step">
+      <div class="dot">4</div>
+      <div class="step-head"><span class="t">JSON response returned</span><span class="chev">▸</span></div>
+      <div class="step-body"><div class="step-body-inner">
+        <p>Every call is logged (<code>logger.info</code>) and the structured result is serialized back to the caller.</p>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CLIENT -->
+<section id="client">
+  <h2>Test Client <span class="badge green">mcp_client.py</span></h2>
+  <div class="subtitle">Automated end-to-end verification of the MCP server — 7 checks, run with <code>python mcp_client.py</code>.</div>
+
+  <div class="tools-grid">
+    <div class="tool-card"><div class="icon">1️⃣</div><h4>Health Check</h4><p>GET /health returns status "ok"</p></div>
+    <div class="tool-card"><div class="icon">2️⃣</div><h4>List Tools</h4><p>GET /tools returns all 5 expected tool names</p></div>
+    <div class="tool-card"><div class="icon">3️⃣</div><h4>Calculator</h4><p>2+2=4 and 100*0.02=2.0 via POST /call</p></div>
+    <div class="tool-card"><div class="icon">4️⃣</div><h4>Get Time</h4><p>Returns a non-empty datetime string</p></div>
+    <div class="tool-card"><div class="icon">5️⃣</div><h4>Write + Read File</h4><p>Writes test_output.txt then reads it back, checks content matches</p></div>
+    <div class="tool-card"><div class="icon">6️⃣</div><h4>RAG Search</h4><p>Queries "NIFTY straddle options strategy", expects non-empty result</p></div>
+    <div class="tool-card"><div class="icon">7️⃣</div><h4>Batch Execution</h4><p>POST /batch with 2 calls, verifies count=2 and individual results</p></div>
+  </div>
+
+  <pre style="margin-top:24px;">==================================================
+MCP Client Test Suite
+Target: http://localhost:8000
+==================================================
+  [PASS] GET /health
+  [PASS] GET /tools returns tools — 5 tools
+  [PASS] 2+2 = 4
+  [PASS] get_time returns datetime string
+  [PASS] write_file success
+  [PASS] search_rag returns results
+  [PASS] batch returns 2 results
+
+✓ All 7 tests passed</pre>
+</section>
+
+<!-- LIVE DEMO -->
+<section id="demo">
+  <h2>Live Trace Demo <span class="badge purple">simulated</span></h2>
+  <div class="subtitle">Watch a simulated ReAct trace for the question: <code>"What is 15% of 2500?"</code> — this mirrors agent.py's verbose console output.</div>
+
+  <div class="demo">
+    <div class="demo-controls">
+      <button id="play-btn" onclick="playDemo()">▶ Run Trace</button>
+      <button onclick="resetDemo()">↺ Reset</button>
+    </div>
+    <div class="console" id="console"></div>
+  </div>
+</section>
+
+</div>
+
+<footer>Generated for the Agent + RAG + MCP local POC &middot; data never leaves your machine</footer>
+
+<script>
+function goTab(name){
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('active', b.dataset.tab===name));
+  document.querySelectorAll('section').forEach(s=>s.classList.toggle('active', s.id===name));
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+document.querySelectorAll('nav.tabs button').forEach(b=>{
+  b.addEventListener('click', ()=>goTab(b.dataset.tab));
+});
+
+document.querySelectorAll('.step-head').forEach(head=>{
+  head.addEventListener('click', ()=>{
+    head.parentElement.classList.toggle('open');
+  });
+});
+
+const trace = [
+  {cls:'q', text:'Question: What is 15% of 2500?'},
+  {cls:'thought', text:'Thought: I need to calculate 15% of 2500, which is 2500 * 0.15.'},
+  {cls:'action', text:'Action: calculator'},
+  {cls:'action', text:'Action Input: 2500 * 0.15'},
+  {cls:'obs', text:'Observation: 375.0'},
+  {cls:'thought', text:'Thought: I now know the final answer.'},
+  {cls:'final', text:'Final Answer: 15% of 2500 is 375.0'},
+];
+
+let playing = false;
+function playDemo(){
+  if(playing) return;
+  playing = true;
+  document.getElementById('play-btn').classList.add('playing');
+  document.getElementById('play-btn').textContent = '⏳ Running...';
+  const c = document.getElementById('console');
+  c.innerHTML = '';
+  trace.forEach((line, i)=>{
+    setTimeout(()=>{
+      const div = document.createElement('div');
+      div.className = 'line ' + line.cls;
+      div.textContent = line.text;
+      c.appendChild(div);
+      c.scrollTop = c.scrollHeight;
+      if(i === trace.length - 1){
+        playing = false;
+        document.getElementById('play-btn').classList.remove('playing');
+        document.getElementById('play-btn').textContent = '▶ Run Trace';
+      }
+    }, i * 750);
+  });
+}
+function resetDemo(){
+  document.getElementById('console').innerHTML = '';
+}
+</script>
+
+</body>
+</html>
