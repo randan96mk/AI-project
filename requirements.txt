@@ -1,6 +1,6 @@
 langchain==0.1.11
 langchain-community==0.0.36
-ollama==0.1.34
+ollama==0.6.2
 chromadb==0.4.24
 sentence-transformers==2.2.2
 fastapi==0.104.1
