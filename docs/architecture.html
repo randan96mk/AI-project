@@ -153,6 +153,77 @@
 
   .pill-row{display:flex; gap:8px; flex-wrap:wrap; margin-top:14px;}
   .pill{background:#0c1626; border:1px solid var(--border); color:var(--accent4); padding:5px 11px; border-radius:16px; font-size:11.5px;}
+
+  /* DEV DEEP-DIVE STYLES */
+  .dev-section-title{
+    font-size:20px; font-weight:700; margin:52px 0 6px;
+    display:flex; align-items:center; gap:10px; color:var(--text);
+    border-left:3px solid var(--accent); padding-left:14px;
+  }
+  .dev-section-title:first-of-type{margin-top:0;}
+  .dev-subtitle{color:var(--muted); font-size:12.5px; margin-bottom:20px; padding-left:17px;}
+
+  .decision{
+    background:linear-gradient(135deg,rgba(167,139,250,.07),rgba(94,234,212,.04));
+    border:1px solid rgba(167,139,250,.3); border-radius:10px; padding:16px 18px; margin:14px 0;
+  }
+  .decision .d-title{color:var(--accent2); font-size:12px; text-transform:uppercase; letter-spacing:1.2px; font-weight:700; margin-bottom:7px;}
+  .decision p{font-size:13px; color:#c4cedd; line-height:1.75;}
+
+  .warn{
+    background:rgba(251,191,36,.06); border:1px solid rgba(251,191,36,.3);
+    border-radius:10px; padding:14px 18px; margin:14px 0;
+  }
+  .warn .w-title{color:var(--yellow); font-size:12px; text-transform:uppercase; letter-spacing:1.2px; font-weight:700; margin-bottom:6px;}
+  .warn p{font-size:13px; color:#c4cedd; line-height:1.75;}
+
+  .compare{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:14px 0;}
+  @media(max-width:700px){.compare{grid-template-columns:1fr;}}
+  .compare .c-box{background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:14px;}
+  .compare .c-box h4{font-size:12px; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;}
+  .compare .c-box.chosen{border-color:var(--green);}
+  .compare .c-box.chosen h4{color:var(--green);}
+  .compare .c-box.rejected h4{color:var(--red);}
+  .compare .c-box p{font-size:12.5px; color:var(--muted);}
+
+  .flow-detail{
+    display:flex; flex-direction:column; gap:0; margin:18px 0;
+  }
+  .fd-row{display:flex; align-items:flex-start; gap:14px; padding:14px 0; border-bottom:1px solid var(--border);}
+  .fd-row:last-child{border-bottom:none;}
+  .fd-num{
+    min-width:32px; height:32px; border-radius:50%; background:var(--panel); border:1px solid var(--accent);
+    display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--accent); flex-shrink:0;
+  }
+  .fd-content{flex:1;}
+  .fd-content strong{color:var(--text); display:block; margin-bottom:4px; font-size:14px;}
+  .fd-content p{font-size:12.5px; color:#8fa0bc; line-height:1.7;}
+  .fd-content code{font-size:11.5px; color:var(--accent4); background:#0c1626; padding:1px 5px; border-radius:3px;}
+
+  .module-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:14px; margin:18px 0;}
+  .module-box{background:var(--panel); border:1px solid var(--border); border-radius:10px; overflow:hidden;}
+  .module-box .m-head{padding:12px 16px; font-weight:700; font-size:13.5px; display:flex; justify-content:space-between; align-items:center;}
+  .module-box .m-head .filename{font-size:11px; color:var(--muted);}
+  .module-box .m-body{padding:12px 16px; font-size:12px; color:var(--muted); line-height:1.7; border-top:1px solid var(--border);}
+  .module-box.a .m-head{background:rgba(167,139,250,.08); color:var(--accent2);}
+  .module-box.r .m-head{background:rgba(74,222,128,.06); color:var(--green);}
+  .module-box.m .m-head{background:rgba(96,165,250,.07); color:var(--accent4);}
+  .module-box.c .m-head{background:rgba(251,191,36,.06); color:var(--yellow);}
+
+  .inline-tag{font-size:11px; background:#0c1626; border:1px solid var(--border); color:var(--accent4); padding:1px 7px; border-radius:4px; margin:0 2px;}
+  .h4d{font-size:14px; color:var(--accent); margin:22px 0 8px;}
+  .bullet-list{list-style:none; margin:8px 0 0 0; padding:0;}
+  .bullet-list li{font-size:13px; color:#8fa0bc; padding:5px 0; border-bottom:1px solid rgba(31,42,61,.6);}
+  .bullet-list li::before{content:"→ "; color:var(--accent4);}
+  .bullet-list li:last-child{border-bottom:none;}
+
+  pre.sm{font-size:12px; line-height:1.6;}
+  .c-green{color:var(--green);}
+  .c-red{color:var(--red);}
+  .c-yellow{color:var(--yellow);}
+  .c-purple{color:var(--accent2);}
+  .c-blue{color:var(--accent4);}
+  .c-teal{color:var(--accent);}
 </style>
 </head>
 <body>
@@ -171,6 +242,7 @@
   <button data-tab="mcp">🔌 MCP Server</button>
   <button data-tab="client">🧪 Test Client</button>
   <button data-tab="demo">▶ Live Trace Demo</button>
+  <button data-tab="devdive">🔬 Dev Deep-Dive</button>
 </nav>
 
 <div class="wrap">
@@ -582,6 +654,442 @@ Target: http://localhost:8000
     </div>
     <div class="console" id="console"></div>
   </div>
+</section>
+
+<!-- DEV DEEP-DIVE -->
+<section id="devdive">
+  <h2>Developer Deep-Dive <span class="badge purple">senior-dev</span></h2>
+  <div class="subtitle">Implementation details, design decisions, module coupling, and trade-offs — written for engineers who want to understand or extend the codebase.</div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MODULE MAP
+  ════════════════════════════════════════════════════════════════ -->
+  <div class="dev-section-title">Module Responsibilities & Dependency Graph</div>
+  <div class="dev-subtitle">Four files. One deliberate coupling problem. All of it intentional for a POC.</div>
+
+  <div class="module-grid">
+    <div class="module-box r">
+      <div class="m-head">rag.py <span class="filename">~140 LOC</span></div>
+      <div class="m-body">
+        <strong style="color:var(--text); display:block; margin-bottom:6px;">Owns:</strong>
+        <code>class RAGSystem</code> — the only stateful class in the project.<br><br>
+        <strong style="color:var(--text); display:block; margin-bottom:6px;">Imports:</strong>
+        LangChain loaders, splitter, Chroma, HuggingFaceEmbeddings. No project imports.<br><br>
+        <strong style="color:var(--text); display:block; margin-bottom:6px;">Exported API:</strong>
+        <code>RAGSystem(persist_dir)</code> → <code>.load_documents()</code>, <code>.search(query, k)</code>
+      </div>
+    </div>
+    <div class="module-box a">
+      <div class="m-head">agent.py <span class="filename">~275 LOC</span></div>
+      <div class="m-body">
+        <strong style="color:var(--text); display:block; margin-bottom:6px;">Owns:</strong>
+        All 5 tool functions + module-level <code>TOOLS</code> list + <code>build_agent()</code> + REPL loop.<br><br>
+        <strong style="color:var(--text); display:block; margin-bottom:6px;">Imports:</strong>
+        LangChain agents/prompts/tools, Ollama LLM, and <code>from rag import RAGSystem</code>.<br><br>
+        <strong style="color:var(--text); display:block; margin-bottom:6px;">Global state:</strong>
+        <code>_rag_system: RAGSystem | None</code> — lazy singleton, initialized on first <code>search_rag</code> call.
+      </div>
+    </div>
+    <div class="module-box m">
+      <div class="m-head">mcp_server.py <span class="filename">~150 LOC</span></div>
+      <div class="m-body">
+        <strong style="color:var(--text); display:block; margin-bottom:6px;">Owns:</strong>
+        FastAPI app, Pydantic models, <code>TOOL_REGISTRY</code> dict, <code>execute_tool()</code>.<br><br>
+        <strong style="color:var(--text); display:block; margin-bottom:6px;">Imports:</strong>
+        <code>from agent import calculator, get_time, read_file, search_rag, write_file</code> — directly imports the function layer, not the agent itself. This means starting the server also cold-initialises the module-level <code>TOOLS</code> list and the lazy <code>_rag_system</code> global in agent.py.<br><br>
+        <strong style="color:var(--text); display:block; margin-bottom:6px;">Note:</strong>
+        The AgentExecutor / LLM is never constructed when the server starts. Only the 5 raw functions are imported.
+      </div>
+    </div>
+    <div class="module-box c">
+      <div class="m-head">mcp_client.py <span class="filename">~150 LOC</span></div>
+      <div class="m-body">
+        <strong style="color:var(--text); display:block; margin-bottom:6px;">Owns:</strong>
+        Integration test harness — 7 test functions, each returning bool, accumulated in a pass/fail sum.<br><br>
+        <strong style="color:var(--text); display:block; margin-bottom:6px;">Imports:</strong>
+        <code>requests</code> only. Zero project imports — tests the HTTP surface, not internals.<br><br>
+        <strong style="color:var(--text); display:block; margin-bottom:6px;">Pattern:</strong>
+        Each test is an independent function call to the server. No mocking, no fixtures — intentionally black-box.
+      </div>
+    </div>
+  </div>
+
+  <pre class="sm" style="margin-top:18px;">Dependency graph (arrows = "imports from"):
+
+  mcp_client.py  ──────────────────────────→  [HTTP only, no import]
+  mcp_server.py  ──→  agent.py  ──→  rag.py  ──→  [third-party libs]
+  agent.py       ──→  rag.py    ──→  [third-party libs]
+
+  Coupling concern: mcp_server.py has agent.py as a hard import.
+  To decouple, extract tool functions into tools.py and import from there.</pre>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       RAG INTERNALS
+  ════════════════════════════════════════════════════════════════ -->
+  <div class="dev-section-title">RAG System — Implementation Details</div>
+  <div class="dev-subtitle">rag.py · class RAGSystem</div>
+
+  <div class="h4d">Constructor: lazy vs eager load</div>
+  <p style="font-size:13px; color:#8fa0bc; line-height:1.7; margin-bottom:10px;">
+    <code>__init__</code> checks if <code>persist_dir</code> is non-empty on disk. If yes, it loads an existing Chroma
+    collection — fast path, no embedding inference needed. If not, it defers to <code>load_documents()</code>.
+    This means import-time cost is cheap (just instantiates the embeddings model handle), and you don't pay
+    inference cost until you either load documents or run a search.
+  </p>
+  <pre class="sm"><span class="c-teal">if</span> os.path.exists(persist_dir) <span class="c-teal">and</span> os.listdir(persist_dir):
+    <span class="c-purple"># Warm path: attach to existing collection</span>
+    self.vectorstore = Chroma(persist_directory=persist_dir, embedding_function=self.embeddings)
+<span class="c-teal">else</span>:
+    <span class="c-purple"># Cold path: vectorstore stays None until load_documents() is called</span>
+    self.vectorstore = None</pre>
+
+  <div class="h4d">Text splitter: RecursiveCharacterTextSplitter</div>
+  <p style="font-size:13px; color:#8fa0bc; line-height:1.7; margin-bottom:10px;">
+    Uses <code>RecursiveCharacterTextSplitter</code> rather than the simpler <code>CharacterTextSplitter</code>.
+    The recursive variant tries to split on progressively smaller boundaries: <code>\n\n</code> → <code>\n</code> → <code>" "</code> → character.
+    This means it respects paragraph and line structure before falling back to hard character splitting — important
+    for markdown where semantic units follow newline conventions.
+  </p>
+  <div class="compare">
+    <div class="c-box chosen"><h4>✓ Chosen: RecursiveCharacterTextSplitter</h4><p>Split order: double-newline → newline → space → char. Preserves markdown paragraph structure. 50-char overlap retains sentence context across chunk boundaries.</p></div>
+    <div class="c-box rejected"><h4>✗ Not used: CharacterTextSplitter</h4><p>Splits strictly on a single separator. Would produce more fragmented chunks for markdown, losing heading-to-body relationships.</p></div>
+  </div>
+
+  <div class="h4d">Embedding model: all-MiniLM-L6-v2</div>
+  <pre class="sm">Dimensions : 384
+Parameters : ~22M
+Inference  : CPU, ~50ms/chunk on Apple M-series
+License    : Apache 2.0
+Source     : sentence-transformers / HuggingFace Hub (cached to ~/.cache after first run)</pre>
+  <div class="decision">
+    <div class="d-title">Why this model over larger alternatives?</div>
+    <p>It's the standard "good enough for semantic similarity with near-zero operational overhead" choice. At 384-d it's faster than <code>all-mpnet-base-v2</code> (768-d) while trading minimal recall. For a POC with &lt;100 chunks, retrieval quality difference is negligible. The full sentence-transformers download is ~90 MB; once cached it's offline-only.</p>
+  </div>
+
+  <div class="h4d">Chroma storage internals</div>
+  <p style="font-size:13px; color:#8fa0bc; line-height:1.7; margin-bottom:10px;">
+    Chroma 0.4.x uses <strong>DuckDB + Parquet</strong> under the hood for the persistent backend when you pass
+    <code>persist_directory</code>. Each collection stores embeddings as columnar Parquet files and metadata
+    in a SQLite-like DuckDB layer. The call to <code>.persist()</code> flushes in-memory state to disk — in
+    Chroma ≥ 0.4, writes are also flushed automatically on collection close, so <code>.persist()</code> is
+    technically redundant but harmless.
+  </p>
+
+  <div class="h4d">Similarity search: distance metric</div>
+  <p style="font-size:13px; color:#8fa0bc; line-height:1.7; margin-bottom:10px;">
+    <code>similarity_search_with_score</code> returns L2 (Euclidean) distance by default in Chroma, not cosine
+    similarity. Lower score = closer match. The scores returned are therefore not bounded to [0,1] — a score
+    of 0.3 might be very good, while 1.5+ means poor match. To switch to cosine, pass
+    <code>collection_metadata={"hnsw:space": "cosine"}</code> to <code>Chroma.from_documents()</code>.
+  </p>
+  <div class="warn">
+    <div class="w-title">⚠ Gotcha: score interpretation</div>
+    <p>The <code>score</code> field in search results is L2 distance, not a similarity percentage. Don't display it to users as a "confidence %" without normalisation. A common filter pattern: discard any result where <code>score &gt; threshold</code> (e.g., 1.2) to avoid returning irrelevant chunks when no good match exists.</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       AGENT INTERNALS
+  ════════════════════════════════════════════════════════════════ -->
+  <div class="dev-section-title">Agent — ReAct Implementation Details</div>
+  <div class="dev-subtitle">agent.py · build_agent() · AgentExecutor</div>
+
+  <div class="h4d">create_react_agent vs legacy initialize_agent</div>
+  <div class="compare">
+    <div class="c-box chosen"><h4>✓ Chosen: create_react_agent (LCEL)</h4><p>Returns an LCEL Runnable. Composable via <code>|</code> pipe syntax. Explicit prompt template passed in — full control over the ReAct format string. Works with <code>AgentExecutor</code> wrapper for iteration control.</p></div>
+    <div class="c-box rejected"><h4>✗ Not used: initialize_agent</h4><p>Legacy API, deprecated in LangChain 0.1.x. Hides the prompt template internally. Harder to customise the Thought/Action/Observation format for non-OpenAI models like Ollama.</p></div>
+  </div>
+
+  <div class="h4d">ReAct prompt template — design choices</div>
+  <pre class="sm">Question: {input}
+Thought:{agent_scratchpad}
+
+<span class="c-purple"># {agent_scratchpad} is the running transcript of prior Thought/Action/Observation turns.
+# LangChain appends each loop's output here before the next LLM call.
+# The template deliberately omits a trailing space after "Thought:" to avoid
+# some models producing a leading newline before their first thought token.</span></pre>
+  <div class="decision">
+    <div class="d-title">Why a custom template instead of the built-in hub prompt?</div>
+    <p>
+      The standard <code>hwchase17/react</code> hub prompt is tuned for GPT-4 and includes more verbose formatting instructions that confuse smaller models like gemma4. The simplified template here gives the model fewer structural constraints to satisfy, reducing parse failures — which is why <code>handle_parsing_errors=True</code> is still needed but fires less often.
+    </p>
+  </div>
+
+  <div class="h4d">AgentExecutor configuration</div>
+  <pre class="sm">AgentExecutor(
+    agent=agent,          <span class="c-purple"># LCEL Runnable: prompt | llm | output_parser</span>
+    tools=TOOLS,          <span class="c-purple"># passed separately so executor can route by tool name</span>
+    verbose=True,         <span class="c-purple"># logs each Thought/Action/Obs to stderr</span>
+    max_iterations=5,     <span class="c-purple"># hard cap prevents infinite loops on parse failures</span>
+    handle_parsing_errors=True  <span class="c-purple"># feeds malformed LLM output back as "Invalid output:" observation</span>
+)</pre>
+
+  <div class="h4d">Ollama LLM: temperature 0.1</div>
+  <div class="decision">
+    <div class="d-title">Why temperature=0.1 and not 0.0?</div>
+    <p>
+      Pure greedy decoding (temp=0) makes the model overly repetitive when it gets stuck in a parsing loop —
+      it will reproduce the same malformed output verbatim on every retry. A small temperature (0.1) introduces
+      just enough token variance to escape stuck states while keeping outputs deterministic enough for tool
+      argument parsing. For production use, 0.0 + explicit retry logic is cleaner.
+    </p>
+  </div>
+
+  <div class="h4d">Tool input contract: the single-string constraint</div>
+  <p style="font-size:13px; color:#8fa0bc; line-height:1.7; margin-bottom:10px;">
+    LangChain's <code>Tool</code> class passes all tool input as a <strong>single string</strong> to <code>func</code>
+    — there's no structured dict dispatch at this abstraction layer. This is why <code>write_file</code> uses the
+    <code>|||</code> delimiter hack to encode two arguments in one string.
+  </p>
+  <pre class="sm"><span class="c-purple"># The LLM generates:  Action Input: output.txt|||Hello World
+# Tool receives:       args = "output.txt|||Hello World"
+# Tool parses:         path, content = args.split("|||", 1)</span>
+
+<span class="c-purple"># Alternative: use StructuredTool from langchain.tools which accepts
+# a TypedDict or Pydantic model for multi-argument tools — better for production.</span></pre>
+
+  <div class="h4d">calculator: sandboxed eval</div>
+  <pre class="sm"><span class="c-purple"># Allowlist approach: only digits, operators, parens, dot, percent, whitespace</span>
+allowed = set("0123456789+-*/().% \t")
+<span class="c-teal">if not</span> all(c <span class="c-teal">in</span> allowed <span class="c-teal">for</span> c <span class="c-teal">in</span> expression):
+    raise ValueError(f"Unsafe expression: {expression}")
+
+<span class="c-purple"># eval with empty __builtins__ prevents access to any Python built-ins.
+# Still: eval is inherently risky; for production replace with a proper
+# expression parser (e.g. pyparsing, asteval, or sympy.sympify).</span>
+result = eval(expression, {"__builtins__": {}})</pre>
+
+  <div class="h4d">_rag_system global: lazy singleton pattern</div>
+  <pre class="sm">_rag_system: RAGSystem | None = None
+
+<span class="c-teal">def</span> _get_rag() -> RAGSystem:
+    <span class="c-teal">global</span> _rag_system
+    <span class="c-teal">if</span> _rag_system <span class="c-teal">is None</span>:
+        _rag_system = RAGSystem()  <span class="c-purple"># loads Chroma on first search_rag() call</span>
+    <span class="c-teal">return</span> _rag_system</pre>
+  <div class="decision">
+    <div class="d-title">Why a module-level global instead of passing RAGSystem as a dependency?</div>
+    <p>
+      LangChain's <code>Tool(func=...)</code> binds a plain callable — there's no dependency injection point in
+      the current abstraction. Proper alternatives: use a closure (<code>make_search_tool(rag)</code> returning
+      a bound function), or use <code>StructuredTool.from_function</code> with an instance method.
+      The global works fine in a single-process, single-threaded POC but is a problem if you ever fork workers —
+      each process gets its own <code>None</code> copy and re-initialises Chroma independently.
+    </p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MCP SERVER INTERNALS
+  ════════════════════════════════════════════════════════════════ -->
+  <div class="dev-section-title">MCP Server — Implementation Details</div>
+  <div class="dev-subtitle">mcp_server.py · FastAPI · TOOL_REGISTRY</div>
+
+  <div class="h4d">TOOL_REGISTRY design: dict of lambdas</div>
+  <pre class="sm">TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {
+    "calculator": {
+        "description": "...",
+        "parameters": {"expression": "string"},
+        <span class="c-teal">"fn"</span>: <span class="c-yellow">lambda</span> args: calculator(args.get("expression", "")),
+    },
+    <span class="c-purple"># Each fn receives the raw `arguments` dict from the HTTP request body
+    # and is responsible for extracting its own keys with safe defaults.</span>
+    "write_file": {
+        <span class="c-teal">"fn"</span>: <span class="c-yellow">lambda</span> args: write_file(
+            f"{args.get('file_path','')}|||{args.get('content','')}"
+        ),
+    },
+}</pre>
+  <div class="decision">
+    <div class="d-title">Why this registry pattern rather than FastAPI route-per-tool?</div>
+    <p>
+      A registry dict allows runtime introspection for <code>GET /tools</code> without duplicating metadata, and
+      the <code>POST /call</code> dispatch is a single <code>TOOL_REGISTRY[tool_name]["fn"](arguments)</code>
+      call rather than a large <code>if/elif</code> chain or dynamic route generation. Adding a new tool is a
+      one-liner dict entry — no new route, no decorator. The trade-off: error messages are less specific because
+      all tool failures surface through the same <code>execute_tool</code> catch block.
+    </p>
+  </div>
+
+  <div class="h4d">Pydantic v2 model shape</div>
+  <pre class="sm"><span class="c-teal">class</span> ToolCall(BaseModel):
+    tool_name: str
+    arguments: Dict[str, Any] = {}      <span class="c-purple"># default empty dict — GET /health never needs args</span>
+
+<span class="c-teal">class</span> ToolResult(BaseModel):
+    tool_name: str
+    result: str                          <span class="c-purple"># always coerced to str via str(result) in execute_tool</span>
+    success: bool
+
+<span class="c-teal">class</span> BatchResult(BaseModel):
+    results: List[ToolResult]
+    count: int                           <span class="c-purple"># redundant with len(results) but convenient for callers</span></pre>
+
+  <div class="h4d">POST /batch: sequential, not concurrent</div>
+  <pre class="sm">results = [execute_tool(req.tool_name, req.arguments) <span class="c-teal">for</span> req <span class="c-teal">in</span> requests]
+<span class="c-purple"># Sequential list comprehension — no asyncio.gather, no ThreadPoolExecutor.
+# Intentional for a POC: tools aren't thread-safe (write_file has no locking,
+# search_rag shares the global _rag_system).
+# For concurrent batch execution: make tools async or wrap in executor,
+# ensure Chroma's vectorstore.search is called from a single thread.</span></pre>
+
+  <div class="h4d">Error isolation strategy</div>
+  <pre class="sm"><span class="c-teal">def</span> execute_tool(tool_name, arguments):
+    <span class="c-teal">if</span> tool_name <span class="c-teal">not in</span> TOOL_REGISTRY:
+        <span class="c-purple"># Known-bad: surfaces as 404 on /call, as failed ToolResult on /batch</span>
+        <span class="c-teal">return</span> ToolResult(tool_name=tool_name, result=f"Unknown tool", success=False)
+    <span class="c-teal">try</span>:
+        result = TOOL_REGISTRY[tool_name]["fn"](arguments)
+        <span class="c-teal">return</span> ToolResult(..., success=True)
+    <span class="c-teal">except</span> Exception <span class="c-teal">as</span> exc:
+        <span class="c-purple"># Catch-all: prevents any tool exception from crashing the server.
+        # /call returns HTTP 200 with success=false (not 500) for tool errors.
+        # This is debatable — a 500 would be more REST-conventional for errors.</span>
+        <span class="c-teal">return</span> ToolResult(..., result=f"Error: {exc}", success=False)</pre>
+
+  <div class="h4d">No authentication — deliberate POC scope</div>
+  <div class="warn">
+    <div class="w-title">⚠ Security: No auth on any endpoint</div>
+    <p>
+      The server binds to <code>0.0.0.0:8000</code>, meaning it's accessible to any process on the local
+      network — not just localhost. <code>write_file</code> accepts arbitrary paths, creating a trivial arbitrary
+      file-write primitive for any caller. For production: bind to <code>127.0.0.1</code>, add an API key
+      header check via FastAPI dependency injection (<code>Depends(verify_api_key)</code>), and sandbox
+      <code>write_file</code> to a configured allowed directory.
+    </p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       DATA FLOW
+  ════════════════════════════════════════════════════════════════ -->
+  <div class="dev-section-title">End-to-End Data Flow</div>
+  <div class="dev-subtitle">From user input through the full stack for a search query.</div>
+
+  <div class="flow-detail">
+    <div class="fd-row">
+      <div class="fd-num">1</div>
+      <div class="fd-content">
+        <strong>stdin → agent.py REPL</strong>
+        <p><code>input("\nYou: ")</code> reads a line. Passed as <code>{"input": user_str}</code> to <code>AgentExecutor.invoke()</code>.</p>
+      </div>
+    </div>
+    <div class="fd-row">
+      <div class="fd-num">2</div>
+      <div class="fd-content">
+        <strong>AgentExecutor → PromptTemplate → Ollama</strong>
+        <p>The executor formats the ReAct prompt with <code>{tools}</code>, <code>{tool_names}</code>, <code>{input}</code>, and <code>{agent_scratchpad}</code> (empty on iteration 1). Sends the completed string to <code>Ollama(model="gemma4:e4b")</code> via HTTP POST to <code>http://localhost:11434/api/generate</code>.</p>
+      </div>
+    </div>
+    <div class="fd-row">
+      <div class="fd-num">3</div>
+      <div class="fd-content">
+        <strong>Ollama response → output parser</strong>
+        <p>LangChain's <code>ReActSingleInputOutputParser</code> scans the raw text for the <code>Action:</code> / <code>Action Input:</code> markers. On success returns an <code>AgentAction</code>; on parse failure returns an <code>AgentFinish</code> with the raw text as output (because <code>handle_parsing_errors=True</code>).</p>
+      </div>
+    </div>
+    <div class="fd-row">
+      <div class="fd-num">4</div>
+      <div class="fd-content">
+        <strong>AgentAction → tool dispatch</strong>
+        <p>Executor looks up <code>action.tool</code> in its internal tool name→callable map (built from the <code>TOOLS</code> list). Calls <code>tool.run(action.tool_input)</code>, which calls the raw Python function with the string argument.</p>
+      </div>
+    </div>
+    <div class="fd-row">
+      <div class="fd-num">5</div>
+      <div class="fd-content">
+        <strong>search_rag → RAGSystem.search() → Chroma</strong>
+        <p><code>_get_rag().search(query, k=3)</code> calls <code>vectorstore.similarity_search_with_score(query, k=3)</code>. Chroma embeds the query using the same <code>HuggingFaceEmbeddings</code> instance, computes L2 distances against stored vectors, returns top-3 <code>(Document, float)</code> tuples.</p>
+      </div>
+    </div>
+    <div class="fd-row">
+      <div class="fd-num">6</div>
+      <div class="fd-content">
+        <strong>Observation appended to scratchpad</strong>
+        <p>Tool output is formatted as <code>\nObservation: {result}\nThought:</code> and appended to <code>agent_scratchpad</code>. On next iteration, the full growing transcript is re-injected into the prompt. This is why context window size matters: each iteration grows the prompt by ~(tool output length + 50 tokens).</p>
+      </div>
+    </div>
+    <div class="fd-row">
+      <div class="fd-num">7</div>
+      <div class="fd-content">
+        <strong>Final Answer → stdout</strong>
+        <p>When the parser finds <code>Final Answer:</code>, execution returns <code>AgentFinish</code>. The executor returns <code>{"input": ..., "output": final_answer_text}</code>. The REPL prints <code>result["output"]</code>.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       KNOWN LIMITATIONS & EXTENSION POINTS
+  ════════════════════════════════════════════════════════════════ -->
+  <div class="dev-section-title">Known Limitations & Extension Points</div>
+  <div class="dev-subtitle">What to fix before taking this beyond a POC.</div>
+
+  <div class="module-grid" style="grid-template-columns:1fr 1fr;">
+    <div class="module-box r">
+      <div class="m-head" style="background:rgba(251,191,36,.07); color:var(--yellow);">Limitation <span class="filename">now</span></div>
+      <div class="m-body">
+        <ul class="bullet-list">
+          <li>No conversation memory — each <code>.invoke()</code> is stateless; prior turns are lost.</li>
+          <li><code>write_file</code> uses <code>|||</code> delimiter hack; fragile if content contains that string.</li>
+          <li>Chroma <code>.persist()</code> deprecated in ≥ 0.5; migrate to <code>PersistentClient</code>.</li>
+          <li>Batch endpoint is synchronous — slow for large batches with I/O-heavy tools.</li>
+          <li>RAG uses L2 distance; no score threshold filter, so bad matches still return.</li>
+          <li><code>0.0.0.0</code> bind + no auth = trivially exploitable <code>write_file</code>.</li>
+          <li>Global <code>_rag_system</code> is not thread-safe under multi-worker Uvicorn.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="module-box m">
+      <div class="m-head" style="background:rgba(94,234,212,.06); color:var(--accent);">Extension Point <span class="filename">next</span></div>
+      <div class="m-body">
+        <ul class="bullet-list">
+          <li>Add <code>ConversationBufferMemory</code> to <code>AgentExecutor</code> for multi-turn sessions.</li>
+          <li>Replace <code>Tool</code> with <code>StructuredTool.from_function</code> + Pydantic args schema.</li>
+          <li>Migrate to <code>chromadb.PersistentClient</code> + cosine space for cleaner API.</li>
+          <li>Make <code>/batch</code> async with <code>asyncio.gather</code> + async tool wrappers.</li>
+          <li>Add <code>score_threshold</code> param to <code>RAGSystem.search()</code>; expose in API.</li>
+          <li>Add FastAPI <code>Depends(verify_api_key)</code> middleware + bind to 127.0.0.1.</li>
+          <li>Pass <code>RAGSystem</code> instance via FastAPI <code>lifespan</code> + <code>app.state</code> instead of global.</li>
+          <li>Add BM25 hybrid re-ranking on top of dense retrieval for keyword-heavy queries.</li>
+          <li>Swap gemma4:e4b for a larger model by changing <code>OLLAMA_MODEL</code> — no other changes.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="h4d">Replacing the global RAG singleton (correct pattern)</div>
+  <pre class="sm"><span class="c-purple"># In mcp_server.py — use FastAPI lifespan for shared state</span>
+<span class="c-teal">from</span> contextlib <span class="c-teal">import</span> asynccontextmanager
+
+<span class="c-teal">@asynccontextmanager</span>
+<span class="c-teal">async def</span> lifespan(app: FastAPI):
+    app.state.rag = RAGSystem()          <span class="c-purple"># created once, shared across all requests</span>
+    <span class="c-teal">yield</span>
+    <span class="c-purple"># cleanup if needed</span>
+
+app = FastAPI(lifespan=lifespan)
+
+<span class="c-purple"># In route handler, inject via Request:</span>
+<span class="c-teal">async def</span> call_tool(request: Request, body: ToolCall):
+    rag = request.app.state.rag
+    ...</pre>
+
+  <div class="h4d">Upgrading write_file to StructuredTool</div>
+  <pre class="sm"><span class="c-teal">from</span> langchain.tools <span class="c-teal">import</span> StructuredTool
+<span class="c-teal">from</span> pydantic <span class="c-teal">import</span> BaseModel
+
+<span class="c-teal">class</span> WriteFileInput(BaseModel):
+    file_path: str
+    content: str
+
+<span class="c-teal">def</span> write_file_fn(file_path: str, content: str) -> str:
+    <span class="c-teal">with</span> open(file_path, "w") <span class="c-teal">as</span> f: f.write(content)
+    <span class="c-teal">return</span> f"Wrote {len(content)} chars to {file_path}"
+
+write_file_tool = StructuredTool.from_function(
+    func=write_file_fn,
+    args_schema=WriteFileInput,
+    name="write_file",
+    description="Write content to a file."
+)</pre>
+
 </section>
 
 </div>
